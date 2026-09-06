@@ -117,6 +117,10 @@ const jobSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    companyWebsite: {
+      type: String,
+      default: '',
+    },
     isExternal: {
       type: Boolean,
       default: false,

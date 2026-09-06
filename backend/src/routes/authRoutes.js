@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe, logout, uploadResume } = require('../controllers/authController');
+const { register, login, getMe, logout, uploadResume, forgotPassword, resetPassword } = require('../controllers/authController');
 const { getUserProfile, updateUserProfile } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -21,6 +21,8 @@ router.post('/login', login);
 router.get('/me', protect, getMe);
 router.post('/logout', logout);
 router.post('/upload-resume', upload.single('resume'), uploadResume);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, handleUploadOrJson, updateUserProfile);
 

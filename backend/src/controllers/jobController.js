@@ -202,6 +202,7 @@ exports.createJob = async (req, res, next) => {
       sourceUrl: finalExternalUrl,
       externalUrl: finalExternalUrl,
       applicationUrl: finalExternalUrl,
+      companyWebsite: req.body.companyWebsite ? String(req.body.companyWebsite).trim() : '',
     });
 
     res.status(201).json({
@@ -275,6 +276,9 @@ exports.updateJob = async (req, res, next) => {
     }
     if (updates.status) {
       updates.isActive = updates.status === 'active';
+    }
+    if (typeof updates.companyWebsite === 'string') {
+      updates.companyWebsite = updates.companyWebsite.trim();
     }
 
     const updatedJob = await Job.findByIdAndUpdate(req.params.id, updates, {

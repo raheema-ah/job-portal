@@ -21,6 +21,7 @@ const AdminCreateJobPage = () => {
 
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState(user?.companyName || '');
+  const [companyWebsite, setCompanyWebsite] = useState('');
   const [location, setLocation] = useState('');
   const [salary, setSalary] = useState('');
   const [jobType, setJobType] = useState('Full-time');
@@ -48,6 +49,7 @@ const AdminCreateJobPage = () => {
       const res = await api.post('/jobs', {
         title: title.trim(),
         company: company.trim() || 'Company',
+        companyWebsite: companyWebsite.trim(),
         location: location.trim(),
         salary: salary.trim() || 'Negotiable',
         jobType,
@@ -121,6 +123,19 @@ const AdminCreateJobPage = () => {
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-semibold"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block font-bold text-slate-900 mb-1.5">
+                  Company Website / Careers Link
+                </label>
+                <input
+                  type="url"
+                  placeholder="e.g. https://google.com/about or https://careers.google.com"
+                  value={companyWebsite}
+                  onChange={(e) => setCompanyWebsite(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                 />
               </div>
             </div>

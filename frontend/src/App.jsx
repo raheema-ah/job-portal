@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import WelcomePage from './pages/WelcomePage';
 import JobSeekerAuthPage from './pages/JobSeekerAuthPage';
 import EmployerAuthPage from './pages/EmployerAuthPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Shared Job Details
 import JobDetailsPage from './pages/JobDetailsPage';
@@ -49,6 +50,7 @@ import AdminSettingsPage from './pages/AdminSettingsPage';
 
 // Employee Pages
 import EmployeeDashboard from './pages/EmployeeDashboard';
+import EmployeeAuthPage from './pages/EmployeeAuthPage';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -68,6 +70,7 @@ function App() {
               <Route path="/" element={<WelcomePage />} />
               <Route path="/welcome" element={<WelcomePage />} />
               <Route path="/jobs/:id" element={<JobDetailsPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
               {/* ================= JOB SEEKER AUTH ================= */}
               <Route path="/job-seeker" element={<JobSeekerAuthPage initialMode="login" />} />
@@ -80,6 +83,11 @@ function App() {
               <Route path="/employer" element={<EmployerAuthPage initialMode="login" />} />
               <Route path="/employer/login" element={<EmployerAuthPage initialMode="login" />} />
               <Route path="/employer/register" element={<EmployerAuthPage initialMode="register" />} />
+
+              {/* ================= EMPLOYEE AUTH ================= */}
+              <Route path="/employee-login" element={<EmployeeAuthPage initialMode="login" />} />
+              <Route path="/employee/login" element={<EmployeeAuthPage initialMode="login" />} />
+              <Route path="/employee/register" element={<EmployeeAuthPage initialMode="register" />} />
 
               {/* ================= CANDIDATE ROUTES ================= */}
               <Route

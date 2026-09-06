@@ -22,7 +22,7 @@ import api from '../services/api';
 import AiMatchBadge from '../components/AiMatchBadge';
 import ApplyModal from '../components/ApplyModal';
 import ExternalApplyModal from '../components/ExternalApplyModal';
-import { isExternalJob, getJobSourceLabel } from '../utils/applyHelper';
+import { isExternalJob, getJobSourceLabel, sanitizeHttpUrl } from '../utils/applyHelper';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -425,7 +425,7 @@ const JobDetailsPage = () => {
 
             {job.companyWebsite && (
               <a
-                href={job.companyWebsite}
+                href={sanitizeHttpUrl(job.companyWebsite)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-medium"

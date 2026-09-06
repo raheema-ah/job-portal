@@ -101,6 +101,47 @@ describe('Job Portal API Integration & Unit Tests', () => {
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
     });
+
+    test('POST /api/auth/forgot-password & reset-password flow', async () => {
+      // 1. Request password reset
+      const forgotRes = await request(app).post('/api/auth/forgot-password').send({
+        email: 'testcandidate@example.com',
+      });
+
+      expect(forgotRes.statusCode).toBe(200);
+      expect(forgotRes.body.success).toBe(true);
+
+      // 2. Fetch user directly from DB to get the generated reset token for testing
+      const userInDb = await User.findOne({ email: 'testcandidate@example.com' }).select('+resetPasswordToken +resetPasswordExpires');
+      expect(userInDb.resetPasswordToken).toBeDefined();
+      expect(userInDb.resetPasswordExpires).toBeDefined();
+
+      // 3. To test reset-password endpoint with the unhashed token: set a known token
+      const crypto = require('crypto');
+      const testRawToken = 'abc123testtoken456def789';
+      userInDb.resetPasswordToken = crypto.createHash('sha256').update(testRawToken).digest('hex');
+      userInDb.resetPasswordExpires = new Date(Date.now() + 3600000);
+      await userInDb.save({ validateBeforeSave: false });
+
+      // 4. Reset password
+      const resetRes = await request(app).post(`/api/auth/reset-password/${testRawToken}`).send({
+        password: 'newpassword123',
+        confirmPassword: 'newpassword123',
+      });
+
+      expect(resetRes.statusCode).toBe(200);
+      expect(resetRes.body.success).toBe(true);
+      expect(resetRes.body.token).toBeDefined();
+
+      // 5. Verify user can now login with new password
+      const loginRes = await request(app).post('/api/auth/login').send({
+        email: 'testcandidate@example.com',
+        password: 'newpassword123',
+      });
+
+      expect(loginRes.statusCode).toBe(200);
+      expect(loginRes.body.token).toBeDefined();
+    });
   });
 
   // 2. Job CRUD & Search Tests
@@ -112,6 +153,7 @@ describe('Job Portal API Integration & Unit Tests', () => {
         .send({
           title: 'Full Stack React Engineer',
           companyName: 'Tech Ventures Inc',
+          companyWebsite: 'https://techventures.com',
           location: 'San Francisco, CA',
           workMode: 'remote',
           employmentType: 'full-time',
@@ -127,6 +169,7 @@ describe('Job Portal API Integration & Unit Tests', () => {
       expect(res.statusCode).toBe(201);
       expect(res.body.success).toBe(true);
       expect(res.body.job._id).toBeDefined();
+      expect(res.body.job.companyWebsite).toBe('https://techventures.com');
       createdJobId = res.body.job._id;
     });
 

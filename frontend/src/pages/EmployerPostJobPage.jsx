@@ -29,6 +29,7 @@ const EmployerPostJobPage = () => {
   const [formData, setFormData] = useState({
     title: '',
     company: user?.companyName || user?.company?.name || '',
+    companyWebsite: user?.company?.website || '',
     location: 'Remote',
     workMode: 'Remote',
     employmentType: 'Full-time',
@@ -58,6 +59,7 @@ const EmployerPostJobPage = () => {
             setFormData({
               title: j.title || '',
               company: j.company || j.companyName || '',
+              companyWebsite: j.companyWebsite || '',
               location: j.location || '',
               workMode: j.workMode || j.workType || 'Remote',
               employmentType: j.employmentType || j.jobType || 'Full-time',
@@ -212,6 +214,20 @@ const EmployerPostJobPage = () => {
                     value={formData.location}
                     onChange={handleChange}
                     placeholder="e.g. San Francisco, CA or Remote"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-semibold text-slate-700">
+                    Company Website / Careers Link
+                  </label>
+                  <input
+                    type="url"
+                    name="companyWebsite"
+                    value={formData.companyWebsite}
+                    onChange={handleChange}
+                    placeholder="e.g. https://techcorp.com or https://techcorp.com/careers"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:border-blue-600"
                   />
                 </div>

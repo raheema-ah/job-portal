@@ -5,9 +5,7 @@ import {
   Building2,
   ArrowRight,
   Briefcase,
-  Sparkles,
-  ShieldCheck,
-  CheckCircle2,
+  BadgeCheck,
 } from 'lucide-react';
 
 const WelcomePage = () => {
@@ -41,8 +39,8 @@ const WelcomePage = () => {
           </p>
         </div>
 
-        {/* Two Options: Job Seeker & Employer Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 pt-2 max-w-2xl mx-auto">
+        {/* Three Options: Job Seeker, Employer & Employee Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 pt-2 max-w-3xl mx-auto">
           
           {/* Card 1: Job Seeker */}
           <button
@@ -81,7 +79,7 @@ const WelcomePage = () => {
             type="button"
             id="welcome-employer-card"
             onClick={() => navigate('/employer')}
-            className="group relative flex flex-col items-center text-center p-4 sm:p-6 bg-white border-2 border-slate-200/90 hover:border-blue-600 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 transform hover:-translate-y-1 text-slate-800"
+            className="group relative flex flex-col items-center text-center p-4 sm:p-6 bg-white border-2 border-slate-200/90 hover:border-indigo-600 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 transform hover:-translate-y-1 text-slate-800"
           >
             {/* Top Pill */}
             <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full mb-3 border border-indigo-100">
@@ -89,12 +87,12 @@ const WelcomePage = () => {
             </span>
 
             {/* Icon */}
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 group-hover:bg-blue-600 text-indigo-600 group-hover:text-white flex items-center justify-center mb-3 transition-colors duration-300 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center mb-3 transition-colors duration-300 shadow-sm">
               <Building2 className="w-6 h-6" />
             </div>
 
             {/* Title & Description */}
-            <h2 className="text-lg font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
+            <h2 className="text-lg font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
               Employer
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-500 mt-1.5 mb-4 leading-relaxed">
@@ -102,13 +100,46 @@ const WelcomePage = () => {
             </p>
 
             {/* Action Button Indicator */}
-            <div className="w-full mt-auto py-2 px-4 rounded-lg bg-slate-900 group-hover:bg-blue-600 text-white font-bold text-xs shadow-md inline-flex items-center justify-center gap-1.5 transition-all">
+            <div className="w-full mt-auto py-2 px-4 rounded-lg bg-slate-900 group-hover:bg-indigo-600 text-white font-bold text-xs shadow-md inline-flex items-center justify-center gap-1.5 transition-all">
               <span>Continue as Employer</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
 
+          {/* Card 3: Employee */}
+          <button
+            type="button"
+            id="welcome-employee-card"
+            onClick={() => navigate('/employee-login')}
+            className="group relative flex flex-col items-center text-center p-4 sm:p-6 bg-white border-2 border-slate-200/90 hover:border-emerald-600 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 transform hover:-translate-y-1 text-slate-800"
+          >
+            {/* Top Pill */}
+            <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full mb-3 border border-emerald-100">
+              For Employees
+            </span>
+
+            {/* Icon */}
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 group-hover:bg-emerald-600 text-emerald-600 group-hover:text-white flex items-center justify-center mb-3 transition-colors duration-300 shadow-sm">
+              <BadgeCheck className="w-6 h-6" />
+            </div>
+
+            {/* Title & Description */}
+            <h2 className="text-lg font-extrabold text-slate-900 group-hover:text-emerald-600 transition-colors">
+              Employee
+            </h2>
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-1.5 mb-4 leading-relaxed">
+              Access your employee dashboard, refer candidates, and explore internal opportunities.
+            </p>
+
+            {/* Action Button Indicator */}
+            <div className="w-full mt-auto py-2 px-4 rounded-lg bg-emerald-600 group-hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 inline-flex items-center justify-center gap-1.5 transition-all">
+              <span>Continue as Employee</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </button>
+
         </div>
+
 
 
 

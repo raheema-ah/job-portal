@@ -17,11 +17,13 @@ import {
   ShieldCheck,
   UserCheck,
   Gift,
+  ChevronDown,
 } from 'lucide-react';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout, isAdmin, isCandidate, isEmployee } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,7 +32,12 @@ const Navbar = () => {
     navigate('/');
   };
 
-  const isActive = (path) => location.pathname === path;
+  const getProfilePath = () => {
+    if (user?.role === 'candidate') return '/candidate/profile';
+    if (user?.role === 'employer') return '/employer/company';
+    if (user?.role === 'admin') return '/admin/settings';
+    return '/employee/dashboard';
+  };
 
   const getDashboardPath = () => {
     if (isAdmin) return '/admin/dashboard';
@@ -61,34 +68,89 @@ const Navbar = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation - Removed to keep clean top bar and use dedicated sidebar */}
+          {/* Desktop Navigation - Clean bar */}
           <div className="hidden md:flex items-center"></div>
 
-          {/* User Auth Badges & Actions */}
+          {/* User Auth Profile Dropdown */}
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated && user && (
-              <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-                <div className="text-right">
-                  <p className="text-xs font-bold text-slate-900 leading-tight">{user.name}</p>
-                  <span
-                    className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                      user.role === 'admin'
-                        ? 'bg-purple-100 text-purple-800'
-                        : user.role === 'employee'
-                        ? 'bg-indigo-100 text-indigo-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}
-                  >
-                    {user.role}
-                  </span>
-                </div>
+              <div className="relative">
                 <button
-                  onClick={handleLogout}
-                  title="Sign Out"
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl hover:bg-slate-100/80 border border-slate-200/80 transition-all group"
                 >
-                  <LogOut className="w-4 h-4" />
+                  {user.profilePhoto || user.profileImage ? (
+                    <img
+                      src={user.profilePhoto || user.profileImage}
+                      alt={user.name}
+                      className="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-xs"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">
+                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
+                      {user.name}
+                    </p>
+                    <p className="text-[10px] font-semibold text-slate-400 capitalize">
+                      {user.role}
+                    </p>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-transform ${
+                      profileDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
                 </button>
+
+                {/* Dropdown Menu */}
+                {profileDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-50 animate-fadeIn space-y-1">
+                      <div className="px-4 py-2.5 border-b border-slate-100">
+                        <p className="text-sm font-extrabold text-slate-900">{user.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                        <span className="inline-block mt-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">
+                          {user.role} Account
+                        </span>
+                      </div>
+
+                      <div className="px-1.5 py-1 space-y-0.5">
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            navigate(getProfilePath());
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100/80 hover:text-blue-600 transition-colors text-left"
+                        >
+                          <User className="w-4 h-4 text-slate-500" />
+                          <span>View Profile</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            handleLogout();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left"
+                        >
+                          <LogOut className="w-4 h-4 text-rose-500" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -121,6 +183,15 @@ const Navbar = () => {
               {user?.role}
             </span>
           </div>
+
+              <Link
+                to={getProfilePath()}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50"
+              >
+                <User className="w-4 h-4 text-slate-500" />
+                <span>View Profile</span>
+              </Link>
 
               {isCandidate && (
                 <>

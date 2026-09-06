@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
+const { sendPasswordResetEmail } = require('../services/emailService');
 
 const generateToken = (id) => {
   return jwt.sign(
@@ -232,6 +234,7 @@ exports.login = async (req, res, next) => {
 
     // Verify role matches selected role if provided (allow employer/admin flexibility)
     if (role && user.role !== role) {
+      // Only allow employer <-> admin flexibility; all other role mismatches are rejected
       const isRoleCompatible =
         (role === 'employer' && (user.role === 'admin' || user.role === 'employer')) ||
         (role === 'admin' && (user.role === 'admin' || user.role === 'employer'));
@@ -239,9 +242,20 @@ exports.login = async (req, res, next) => {
       if (!isRoleCompatible) {
         const formattedRole = user.role.charAt(0).toUpperCase() + user.role.slice(1);
         const selectedRole = role.charAt(0).toUpperCase() + role.slice(1);
+
+        // Provide a helpful portal-specific message
+        let portalHint = '';
+        if (user.role === 'employee') {
+          portalHint = ' This account is an Employee account — please use the Employee portal to sign in.';
+        } else if (user.role === 'employer') {
+          portalHint = ' Please use the Employer login portal.';
+        } else if (user.role === 'candidate') {
+          portalHint = ' Please use the Job Seeker login portal.';
+        }
+
         return res.status(403).json({
           success: false,
-          message: `Account is registered as ${formattedRole}, not ${selectedRole}. Please select ${formattedRole} role to sign in.`,
+          message: `This account is registered as ${formattedRole}, not ${selectedRole}.${portalHint}`,
         });
       }
     }
@@ -316,3 +330,99 @@ exports.logout = async (req, res) => {
   });
 };
 
+// @desc    Request password reset — sends email with token
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Please provide your email address' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+resetPasswordToken +resetPasswordExpires');
+
+    // Always respond with success to prevent email enumeration
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If an account with that email exists, a reset link has been sent.',
+      });
+    }
+
+    // Generate random reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    const expiresHours = parseInt(process.env.RESET_TOKEN_EXPIRES_HOURS || '1', 10);
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = new Date(Date.now() + expiresHours * 60 * 60 * 1000);
+    await user.save({ validateBeforeSave: false });
+
+    // Send reset email (gracefully degrades to console.log in dev)
+    await sendPasswordResetEmail({
+      email: user.email,
+      name: user.name,
+      resetToken,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'If an account with that email exists, a reset link has been sent.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Reset password using valid token
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      return res.status(400).json({ success: false, message: 'Passwords do not match' });
+    }
+
+    // Hash the token from URL and find matching user
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: new Date() },
+    }).select('+resetPasswordToken +resetPasswordExpires +password');
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password reset link is invalid or has expired. Please request a new one.',
+      });
+    }
+
+    // Update password — pre-save hook will hash it
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    // Issue new JWT so user is immediately logged in
+    const authToken = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successfully. You are now logged in.',
+      token: authToken,
+      user: formatUserResponse(user),
+    });
+  } catch (error) {
+    next(error);
+  }
+};

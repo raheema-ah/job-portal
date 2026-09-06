@@ -16,7 +16,7 @@ import AiMatchBadge from './AiMatchBadge';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
-import { isExternalJob, getExternalApplyUrl, getJobSourceLabel } from '../utils/applyHelper';
+import { isExternalJob, getExternalApplyUrl, getJobSourceLabel, sanitizeHttpUrl } from '../utils/applyHelper';
 
 const JobCard = ({ job, isSavedInitial = false, onSaveToggle, onApplyClick }) => {
   const { isAuthenticated, isCandidate } = useAuth();
@@ -91,7 +91,23 @@ const JobCard = ({ job, isSavedInitial = false, onSaveToggle, onApplyClick }) =>
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-slate-400">{job.companyName}</span>
+                {job.companyWebsite ? (
+                  <a
+                    href={sanitizeHttpUrl(job.companyWebsite)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xs font-medium text-slate-400 hover:text-indigo-300 hover:underline transition-colors inline-flex items-center gap-1"
+                    title={`Visit ${job.companyName || job.company} website`}
+                  >
+                    <span>{job.companyName || job.company || 'Company'}</span>
+                    <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                  </a>
+                ) : (
+                  <span className="text-xs font-medium text-slate-400">
+                    {job.companyName || job.company || 'Company'}
+                  </span>
+                )}
                 {job.isScraped && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">
                     <Globe className="w-2.5 h-2.5" />
