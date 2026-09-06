@@ -168,8 +168,14 @@ exports.updateCompany = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Company not found' });
     }
 
-    // Verify ownership or admin
-    if (company.createdBy && company.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    // Verify ownership or admin / employer / employee
+    if (
+      company.createdBy &&
+      company.createdBy.toString() !== req.user._id.toString() &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'employer' &&
+      req.user.role !== 'employee'
+    ) {
       return res.status(403).json({ success: false, message: 'Not authorized to edit this company' });
     }
 

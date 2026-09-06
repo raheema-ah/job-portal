@@ -132,7 +132,10 @@ exports.getJobApplications = async (req, res, next) => {
 // @access  Private (Admin / Employer)
 exports.getEmployerAllApplications = async (req, res, next) => {
   try {
-    const myJobs = await Job.find({ postedBy: req.user._id }).select('_id title company companyName location');
+    let myJobs = await Job.find({ postedBy: req.user._id }).select('_id title company companyName location');
+    if (myJobs.length === 0 && (req.user.role === 'admin' || req.user.role === 'employer' || req.user.role === 'employee')) {
+      myJobs = await Job.find().select('_id title company companyName location');
+    }
     const jobIds = myJobs.map((j) => j._id);
 
     const applications = await Application.find({ job: { $in: jobIds } })
@@ -228,11 +231,13 @@ exports.updateApplicationStatus = async (req, res, next) => {
       });
     }
 
-    // Verify user owns the job or is admin
+    // Verify user owns the job or is admin / employer / employee
     if (
       application.job?.postedBy &&
       application.job.postedBy.toString() !== req.user._id.toString() &&
-      req.user.role !== 'admin'
+      req.user.role !== 'admin' &&
+      req.user.role !== 'employer' &&
+      req.user.role !== 'employee'
     ) {
       return res.status(403).json({
         success: false,

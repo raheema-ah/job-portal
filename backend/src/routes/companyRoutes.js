@@ -13,12 +13,12 @@ const { authorize } = require('../middleware/roleMiddleware');
 
 // Public/Authenticated routes
 router.get('/', getCompanies);
-router.get('/my/profile', protect, authorize('admin', 'employer'), getMyCompanyProfile);
+router.get('/my/profile', protect, authorize('admin', 'employer', 'employee'), getMyCompanyProfile);
 router.get('/:id', getCompanyById);
 
-// Create / Edit Company
-router.post('/', protect, authorize('admin', 'employer'), createCompany);
-router.put('/:id', protect, authorize('admin', 'employer'), updateCompany);
+// Create / Edit Company (employer, employee, admin)
+router.post('/', protect, authorize('admin', 'employer', 'employee'), createCompany);
+router.put('/:id', protect, authorize('admin', 'employer', 'employee'), updateCompany);
 
 // Delete Company (Admin only)
 router.delete('/:id', protect, authorize('admin'), deleteCompany);

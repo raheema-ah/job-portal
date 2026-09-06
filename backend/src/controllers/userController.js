@@ -63,20 +63,39 @@ exports.updateUserProfile = async (req, res, next) => {
       jobPreferences,
     } = req.body;
 
-    if (name) user.name = name.trim();
-    if (phone !== undefined) user.phone = phone.trim();
-    if (location !== undefined) user.location = location.trim();
-    if (resume !== undefined) user.resume = resume.trim();
+    if (name) user.name = String(name).trim();
+    if (phone !== undefined && phone !== null) user.phone = String(phone).trim();
+    if (location !== undefined && location !== null) user.location = String(location).trim();
+    if (resume !== undefined && resume !== null) user.resume = String(resume).trim();
     if (resumeData !== undefined) user.resumeData = resumeData;
-    if (profileImage !== undefined) user.profileImage = profileImage.trim();
-    if (profilePhoto !== undefined) user.profilePhoto = profilePhoto.trim();
-    if (bio !== undefined) user.bio = bio.trim();
-    if (education !== undefined) user.education = education.trim();
+    if (profileImage !== undefined && profileImage !== null) user.profileImage = String(profileImage).trim();
+    if (profilePhoto !== undefined && profilePhoto !== null) user.profilePhoto = String(profilePhoto).trim();
+    if (bio !== undefined && bio !== null) user.bio = String(bio).trim();
+    if (education !== undefined && education !== null) user.education = String(education).trim();
     if (experienceYears !== undefined) user.experienceYears = Number(experienceYears) || 0;
 
+    // Handle files if uploaded via multipart/form-data
+    if (req.files && Array.isArray(req.files)) {
+      const resumeFile = req.files.find((f) => f.fieldname === 'resume');
+      if (resumeFile) {
+        user.resume = `/uploads/${resumeFile.filename}`;
+        user.resumeData = {
+          url: `/uploads/${resumeFile.filename}`,
+          filename: resumeFile.originalname,
+          uploadedAt: new Date(),
+          size: resumeFile.size,
+        };
+      }
+      const photoFile = req.files.find((f) => f.fieldname === 'photo' || f.fieldname === 'profilePhoto');
+      if (photoFile) {
+        user.profilePhoto = `/uploads/${photoFile.filename}`;
+        user.profileImage = `/uploads/${photoFile.filename}`;
+      }
+    }
+
     if (user.role === 'admin' || user.role === 'employer') {
-      if (companyName) user.companyName = companyName.trim();
-      if (companyLocation !== undefined) user.companyLocation = companyLocation.trim();
+      if (companyName) user.companyName = String(companyName).trim();
+      if (companyLocation !== undefined && companyLocation !== null) user.companyLocation = String(companyLocation).trim();
     }
 
     if (skills !== undefined) {

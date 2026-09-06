@@ -218,8 +218,14 @@ exports.updateJob = async (req, res, next) => {
       });
     }
 
-    // Ensure only the job creator or an admin can update
-    if (job.postedBy && job.postedBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    // Ensure only the job creator, employer, employee or an admin can update
+    if (
+      job.postedBy &&
+      job.postedBy.toString() !== req.user._id.toString() &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'employer' &&
+      req.user.role !== 'employee'
+    ) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this job',
@@ -286,7 +292,13 @@ exports.toggleJobStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Job not found' });
     }
 
-    if (job.postedBy && job.postedBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (
+      job.postedBy &&
+      job.postedBy.toString() !== req.user._id.toString() &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'employer' &&
+      req.user.role !== 'employee'
+    ) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
@@ -320,7 +332,13 @@ exports.deleteJob = async (req, res, next) => {
     }
 
     // Ensure authorization
-    if (job.postedBy && job.postedBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (
+      job.postedBy &&
+      job.postedBy.toString() !== req.user._id.toString() &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'employer' &&
+      req.user.role !== 'employee'
+    ) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this job',
@@ -345,7 +363,10 @@ exports.deleteJob = async (req, res, next) => {
 // @access  Private (Admin / Employer)
 exports.getMyPostedJobs = async (req, res, next) => {
   try {
-    const jobs = await Job.find({ postedBy: req.user._id }).sort({ createdAt: -1 });
+    let jobs = await Job.find({ postedBy: req.user._id }).sort({ createdAt: -1 });
+    if (jobs.length === 0 && (req.user.role === 'admin' || req.user.role === 'employer' || req.user.role === 'employee')) {
+      jobs = await Job.find().sort({ createdAt: -1 });
+    }
 
     // Attach applicant count to each job
     const jobsWithCounts = await Promise.all(

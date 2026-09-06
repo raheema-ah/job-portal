@@ -17,9 +17,20 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
+const handleUploadOrJson = (req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.includes('multipart/form-data')) {
+    return upload.any()(req, res, (err) => {
+      if (err) return next(err);
+      next();
+    });
+  }
+  next();
+};
+
 // Profile routes (Any authenticated user)
 router.get('/profile', protect, getUserProfile);
-router.put('/profile', protect, updateUserProfile);
+router.put('/profile', protect, handleUploadOrJson, updateUserProfile);
 
 // Resume upload / delete routes
 router.post('/upload/resume', protect, upload.single('resume'), uploadResume);

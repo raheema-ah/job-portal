@@ -17,9 +17,9 @@ const { authorize } = require('../middleware/roleMiddleware');
 // Public routes
 router.get('/', getJobs);
 
-// Protected routes (Admin & Employer)
-router.get('/my/posted', protect, authorize('admin', 'employer'), getMyPostedJobs);
-router.get('/employer/my-jobs', protect, authorize('admin', 'employer'), getMyPostedJobs);
+// Protected routes (Admin, Employer & Employee)
+router.get('/my/posted', protect, authorize('admin', 'employer', 'employee'), getMyPostedJobs);
+router.get('/employer/my-jobs', protect, authorize('admin', 'employer', 'employee'), getMyPostedJobs);
 router.get('/admin/all', protect, authorize('admin'), getAdminAllJobs);
 
 // Job details
@@ -31,10 +31,10 @@ router.post('/:id/apply', protect, authorize('candidate'), (req, res, next) => {
   applyToJob(req, res, next);
 });
 
-// Employer & Admin Job Management
-router.post('/', protect, authorize('admin', 'employer'), createJob);
-router.put('/:id/status', protect, authorize('admin', 'employer'), toggleJobStatus);
-router.put('/:id', protect, authorize('admin', 'employer'), updateJob);
-router.delete('/:id', protect, authorize('admin', 'employer'), deleteJob);
+// Employer, Employee & Admin Job Management
+router.post('/', protect, authorize('admin', 'employer', 'employee'), createJob);
+router.put('/:id/status', protect, authorize('admin', 'employer', 'employee'), toggleJobStatus);
+router.put('/:id', protect, authorize('admin', 'employer', 'employee'), updateJob);
+router.delete('/:id', protect, authorize('admin', 'employer', 'employee'), deleteJob);
 
 module.exports = router;
