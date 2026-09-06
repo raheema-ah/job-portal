@@ -212,6 +212,11 @@ const seedData = async () => {
         requirements: ['7+ years backend engineering', 'Expertise in Go/Golang and SQL tuning'],
         responsibilities: ['Scale transaction throughput and resilience.'],
         postedBy: admin._id,
+        isExternal: true,
+        source: 'Company Website',
+        sourceName: 'Stripe Careers',
+        externalUrl: 'https://stripe.com/jobs',
+        applicationUrl: 'https://stripe.com/jobs/staff-backend-systems',
       },
       {
         title: 'Junior Full Stack Developer',
@@ -226,6 +231,11 @@ const seedData = async () => {
         requirements: ['Computer Science degree or reputable bootcamp graduate', 'Proficiency in JavaScript and React'],
         responsibilities: ['Develop client-facing features under guidance of senior staff.'],
         postedBy: admin._id,
+        isExternal: true,
+        source: 'Company Website',
+        sourceName: 'LaunchPad Careers',
+        externalUrl: 'https://launchpad.example.com/careers',
+        applicationUrl: 'https://launchpad.example.com/careers/apply/junior-fullstack',
       },
     ];
 

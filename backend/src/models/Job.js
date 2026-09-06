@@ -101,9 +101,29 @@ const jobSchema = new mongoose.Schema(
       type: String,
       default: 'Direct',
     },
+    sourceName: {
+      type: String,
+      default: '',
+    },
     sourceUrl: {
       type: String,
       default: '',
+    },
+    externalUrl: {
+      type: String,
+      default: '',
+    },
+    applicationUrl: {
+      type: String,
+      default: '',
+    },
+    isExternal: {
+      type: Boolean,
+      default: false,
+    },
+    externalClicks: {
+      type: Number,
+      default: 0,
     },
     dedupHash: {
       type: String,

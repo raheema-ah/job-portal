@@ -21,6 +21,8 @@ import {
 import api from '../services/api';
 import AiMatchBadge from '../components/AiMatchBadge';
 import ApplyModal from '../components/ApplyModal';
+import ExternalApplyModal from '../components/ExternalApplyModal';
+import { isExternalJob, getJobSourceLabel } from '../utils/applyHelper';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -34,6 +36,7 @@ const JobDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [isExternalApplyModalOpen, setIsExternalApplyModalOpen] = useState(false);
 
   const fetchJob = async () => {
     try {
@@ -189,16 +192,14 @@ const JobDetailsPage = () => {
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 Status: {job.applicationStatus?.toUpperCase() || 'APPLIED'}
               </div>
-            ) : job.isScraped && job.sourceUrl ? (
-              <a
-                href={job.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="gradient-btn-primary flex items-center gap-2 text-xs font-semibold !py-3 !px-6"
+            ) : isExternalJob(job) ? (
+              <button
+                onClick={() => setIsExternalApplyModalOpen(true)}
+                className="gradient-btn-primary flex items-center gap-2 text-xs font-bold !py-3 !px-6 shadow-md"
               >
-                Apply on {job.source || 'Original Site'}
+                <span>Apply on {getJobSourceLabel(job)}</span>
                 <ExternalLink className="w-4 h-4" />
-              </a>
+              </button>
             ) : (
               <button
                 onClick={() => {
@@ -209,7 +210,7 @@ const JobDetailsPage = () => {
                   }
                   setIsApplyModalOpen(true);
                 }}
-                className="gradient-btn-primary flex items-center gap-2 text-xs font-semibold !py-3 !px-6"
+                className="gradient-btn-primary flex items-center gap-2 text-xs font-bold !py-3 !px-6 shadow-md"
               >
                 Apply for Position
               </button>
@@ -382,16 +383,14 @@ const JobDetailsPage = () => {
 
             {/* Bottom Apply CTA in Sidebar */}
             <div className="pt-2">
-              {job.isScraped && job.sourceUrl ? (
-                <a
-                  href={job.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full gradient-btn-primary flex items-center justify-center gap-2 text-xs font-semibold !py-2.5"
+              {isExternalJob(job) ? (
+                <button
+                  onClick={() => setIsExternalApplyModalOpen(true)}
+                  className="w-full gradient-btn-primary flex items-center justify-center gap-2 text-xs font-bold !py-2.5 shadow-md"
                 >
-                  Apply on {job.source || 'Aggregated Feed'}
+                  <span>Apply on {getJobSourceLabel(job)}</span>
                   <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                </button>
               ) : (
                 <button
                   onClick={() => {
@@ -402,7 +401,7 @@ const JobDetailsPage = () => {
                     }
                     setIsApplyModalOpen(true);
                   }}
-                  className="w-full gradient-btn-primary text-xs font-semibold !py-2.5"
+                  className="w-full gradient-btn-primary text-xs font-bold !py-2.5 shadow-md"
                 >
                   Apply Now
                 </button>
@@ -419,20 +418,14 @@ const JobDetailsPage = () => {
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">{job.companyName}</h4>
-                <p className="text-[11px] text-slate-400">{job.company?.industry || 'Technology'}</p>
+                <p className="text-sm font-bold text-white">{job.company || job.companyName}</p>
+                <p className="text-xs text-slate-400">{job.location}</p>
               </div>
             </div>
 
-            {job.company?.description && (
-              <p className="text-xs text-slate-400 leading-relaxed">
-                {job.company.description}
-              </p>
-            )}
-
-            {job.company?.website && (
+            {job.companyWebsite && (
               <a
-                href={job.company.website}
+                href={job.companyWebsite}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-medium"
@@ -446,7 +439,7 @@ const JobDetailsPage = () => {
 
       </div>
 
-      {/* Apply Modal */}
+      {/* Internal Apply Modal */}
       {isApplyModalOpen && (
         <ApplyModal
           job={job}
@@ -455,6 +448,13 @@ const JobDetailsPage = () => {
           onAppliedSuccess={() => fetchJob()}
         />
       )}
+
+      {/* External Apply Redirect Modal */}
+      <ExternalApplyModal
+        job={job}
+        isOpen={isExternalApplyModalOpen}
+        onClose={() => setIsExternalApplyModalOpen(false)}
+      />
 
     </div>
   );

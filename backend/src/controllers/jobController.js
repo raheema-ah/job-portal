@@ -167,6 +167,11 @@ exports.createJob = async (req, res, next) => {
     const finalJobType = employmentType || jobType || 'Full-time';
     const finalWorkMode = workMode || workType || 'On-site';
 
+    const isJobExternal = Boolean(req.body.isExternal || req.body.externalUrl || req.body.applicationUrl || (req.body.source && req.body.source !== 'Direct'));
+    const finalSource = req.body.source || (isJobExternal ? 'Company Website' : 'Direct');
+    const finalSourceName = req.body.sourceName || finalCompany.trim();
+    const finalExternalUrl = req.body.externalUrl || req.body.applicationUrl || '';
+
     const newJob = await Job.create({
       title: title.trim(),
       company: finalCompany.trim(),
@@ -190,8 +195,13 @@ exports.createJob = async (req, res, next) => {
       postedBy: req.user._id,
       status: 'active',
       isActive: true,
-      isScraped: false,
-      source: 'Direct',
+      isScraped: Boolean(req.body.isScraped),
+      isExternal: isJobExternal,
+      source: finalSource,
+      sourceName: finalSourceName,
+      sourceUrl: finalExternalUrl,
+      externalUrl: finalExternalUrl,
+      applicationUrl: finalExternalUrl,
     });
 
     res.status(201).json({
@@ -433,6 +443,41 @@ exports.getAdminAllJobs = async (req, res, next) => {
       success: true,
       count: jobsWithCounts.length,
       jobs: jobsWithCounts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Track click on external job application link
+// @route   POST /api/jobs/:id/track-click
+// @access  Public / Candidate
+exports.trackExternalClick = async (req, res, next) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    job.externalClicks = (job.externalClicks || 0) + 1;
+    await job.save();
+
+    const candidateEmail = req.user ? req.user.email : 'Guest / Visitor';
+    const destinationUrl = job.applicationUrl || job.externalUrl || job.sourceUrl || '';
+
+    console.log(`[External Apply Tracking] Candidate: ${candidateEmail} | Job: "${job.title}" | Company: "${job.company}" | Source: "${job.sourceName || job.source || 'Company Website'}" | URL: ${destinationUrl} | Total Clicks: ${job.externalClicks}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'External apply redirect tracked successfully',
+      jobId: job._id,
+      jobTitle: job.title,
+      company: job.company || job.companyName,
+      source: job.source,
+      sourceName: job.sourceName || job.company,
+      externalUrl: destinationUrl,
+      externalClicks: job.externalClicks,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     next(error);

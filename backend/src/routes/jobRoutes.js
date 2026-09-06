@@ -9,6 +9,7 @@ const {
   deleteJob,
   getMyPostedJobs,
   getAdminAllJobs,
+  trackExternalClick,
 } = require('../controllers/jobController');
 const { applyToJob } = require('../controllers/applicationController');
 const { protect } = require('../middleware/authMiddleware');
@@ -25,7 +26,10 @@ router.get('/admin/all', protect, authorize('admin'), getAdminAllJobs);
 // Job details
 router.get('/:id', getJobById);
 
-// Candidate apply route
+// External apply tracking (Candidate or Guest)
+router.post('/:id/track-click', trackExternalClick);
+
+// Candidate apply route (Internal jobs)
 router.post('/:id/apply', protect, authorize('candidate'), (req, res, next) => {
   req.body.jobId = req.params.id;
   applyToJob(req, res, next);

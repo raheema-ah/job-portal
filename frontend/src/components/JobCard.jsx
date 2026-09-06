@@ -16,6 +16,7 @@ import AiMatchBadge from './AiMatchBadge';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
+import { isExternalJob, getExternalApplyUrl, getJobSourceLabel } from '../utils/applyHelper';
 
 const JobCard = ({ job, isSavedInitial = false, onSaveToggle, onApplyClick }) => {
   const { isAuthenticated, isCandidate } = useAuth();
@@ -185,20 +186,32 @@ const JobCard = ({ job, isSavedInitial = false, onSaveToggle, onApplyClick }) =>
             Details
           </Link>
 
-          {job.isScraped && job.sourceUrl ? (
-            <a
-              href={job.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-medium px-3.5 py-2 rounded-xl gradient-btn-primary flex items-center gap-1"
+          {isExternalJob(job) ? (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                if (onApplyClick) {
+                  onApplyClick(job);
+                } else {
+                  const url = getExternalApplyUrl(job);
+                  if (url) {
+                    toast.info(`You are being redirected to ${getJobSourceLabel(job)} to complete your application.`);
+                    api.post(`/jobs/${job._id}/track-click`).catch(() => {});
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  } else {
+                    toast.error('No external application URL found for this job');
+                  }
+                }
+              }}
+              className="text-xs font-bold px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 shadow-sm shadow-indigo-500/20 transition-all"
             >
-              Apply Source
-              <ExternalLink className="w-3 h-3" />
-            </a>
+              <span>Apply on {getJobSourceLabel(job)}</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
           ) : (
             <button
               onClick={() => (onApplyClick ? onApplyClick(job) : navigate(`/jobs/${job._id}`))}
-              className="text-xs font-medium px-3.5 py-2 rounded-xl gradient-btn-primary"
+              className="text-xs font-bold px-4 py-2 rounded-xl gradient-btn-primary shadow-sm"
             >
               Apply Now
             </button>

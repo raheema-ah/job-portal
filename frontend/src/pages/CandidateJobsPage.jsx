@@ -21,6 +21,8 @@ import {
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import RoleLayout from '../components/RoleLayout';
+import ExternalApplyModal from '../components/ExternalApplyModal';
+import { isExternalJob, getJobSourceLabel } from '../utils/applyHelper';
 
 const CandidateJobsPage = () => {
   const { user } = useAuth();
@@ -48,6 +50,7 @@ const CandidateJobsPage = () => {
 
   // Apply Modal state
   const [applyModalJob, setApplyModalJob] = useState(null);
+  const [externalApplyModalJob, setExternalApplyModalJob] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [applying, setApplying] = useState(false);
   const [applyMessage, setApplyMessage] = useState('');
@@ -133,6 +136,11 @@ const CandidateJobsPage = () => {
 
   // Open Apply Modal
   const handleOpenApplyModal = (job) => {
+    if (!job) return;
+    if (isExternalJob(job)) {
+      setExternalApplyModalJob(job);
+      return;
+    }
     setApplyModalJob(job);
     setCoverLetter('');
     setApplyMessage('');
@@ -444,7 +452,15 @@ const CandidateJobsPage = () => {
                         Details
                       </button>
 
-                      {isApplied ? (
+                      {isExternalJob(job) ? (
+                        <button
+                          onClick={() => handleOpenApplyModal(job)}
+                          className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-colors flex items-center gap-1"
+                        >
+                          <span>Apply on {getJobSourceLabel(job)}</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </button>
+                      ) : isApplied ? (
                         <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Applied
                         </span>
@@ -453,7 +469,7 @@ const CandidateJobsPage = () => {
                           onClick={() => handleOpenApplyModal(job)}
                           className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
                         >
-                          Apply
+                          Apply Now
                         </button>
                       )}
                     </div>
@@ -619,7 +635,19 @@ const CandidateJobsPage = () => {
                   Close
                 </button>
 
-                {appliedJobIds.has(selectedJob._id) ? (
+                {isExternalJob(selectedJob) ? (
+                  <button
+                    onClick={() => {
+                      const j = selectedJob;
+                      setSelectedJob(null);
+                      handleOpenApplyModal(j);
+                    }}
+                    className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-colors"
+                  >
+                    <span>Apply on {getJobSourceLabel(selectedJob)}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                ) : appliedJobIds.has(selectedJob._id) ? (
                   <span className="px-5 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" /> Application Submitted
                   </span>
@@ -642,73 +670,72 @@ const CandidateJobsPage = () => {
         </div>
       )}
 
-      {/* ================= APPLY MODAL ================= */}
-      {applyModalJob && (
+      {/* ================= APPLY MODAL (INTERNAL) ================= */}
+      {applyModalJob && !isExternalJob(applyModalJob) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white w-full max-w-lg rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5">
             
             <div className="flex items-start justify-between gap-3">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                  Quick Job Application
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                  Internal Application
                 </span>
-                <h3 className="text-lg font-bold text-slate-900 mt-1">
+                <h3 className="text-xl font-black text-slate-900 leading-tight mt-1">
                   Apply for {applyModalJob.title}
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
                   {applyModalJob.company || applyModalJob.companyName} • {applyModalJob.location}
                 </p>
               </div>
               <button
                 onClick={() => setApplyModalJob(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {applyMessage && (
-              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                 <span>{applyMessage}</span>
               </div>
             )}
 
             {applyError && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                 <span>{applyError}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmitApplication} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmitApplication} className="space-y-4">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Applicant Profile
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Applicant Profile Summary
                 </label>
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <p className="font-bold text-slate-900">{user?.name}</p>
-                  <p className="text-slate-500">{user?.email} • {user?.phone || 'No phone'}</p>
-                  <p className="text-[11px] text-blue-600 font-medium">
-                    {user?.resume ? '✓ Resume attached from profile' : 'ℹ You can attach notes below'}
-                  </p>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1 text-slate-600">
+                  <p><strong className="text-slate-800">Name:</strong> {user?.name}</p>
+                  <p><strong className="text-slate-800">Email:</strong> {user?.email}</p>
+                  <p><strong className="text-slate-800">Phone:</strong> {user?.phone || 'Not specified'}</p>
+                  <p><strong className="text-slate-800">Resume:</strong> {user?.resumeData?.filename || user?.resume || 'Profile Resume'}</p>
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Cover Letter / Note to Hiring Team (Optional)
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Cover Letter / Note (Optional)
                 </label>
                 <textarea
                   rows={4}
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
-                  placeholder="Introduce yourself, highlight your top skills, or share why you're a great fit for this position..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600"
+                  placeholder="Introduce yourself and explain why you're a great fit for this role..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-medium text-slate-800"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setApplyModalJob(null)}
@@ -737,6 +764,13 @@ const CandidateJobsPage = () => {
           </div>
         </div>
       )}
+
+      {/* ================= APPLY MODAL (EXTERNAL REDIRECT) ================= */}
+      <ExternalApplyModal
+        job={isExternalJob(applyModalJob) ? applyModalJob : null}
+        isOpen={Boolean(applyModalJob && isExternalJob(applyModalJob))}
+        onClose={() => setApplyModalJob(null)}
+      />
 
     </RoleLayout>
   );

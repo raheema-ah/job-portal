@@ -194,69 +194,91 @@ const CandidateProfilePage = () => {
     proficiency: 'Fluent',
   });
 
-  // Load User Data
+  // Fetch fresh profile from backend API (MongoDB) on mount
+  const fetchCandidateProfile = async () => {
+    try {
+      const res = await api.get('/users/profile');
+      if (res.data?.success && res.data.user) {
+        const u = res.data.user;
+        populateProfileState(u);
+        if (updateUser) updateUser(u);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch candidate profile from API, falling back to session user:', err.message);
+    }
+  };
+
+  const populateProfileState = (u) => {
+    if (!u) return;
+    setProfileData({
+      name: u.name || '',
+      email: u.email || '',
+      phone: u.phone || '',
+      location: u.location || '',
+      profilePhoto: u.profilePhoto || u.profileImage || '',
+      bio: u.bio || '',
+      basicInfo: {
+        dob: u.basicInfo?.dob || '',
+        gender: u.basicInfo?.gender || '',
+        city: u.basicInfo?.city || '',
+        state: u.basicInfo?.state || '',
+        linkedinUrl: u.basicInfo?.linkedinUrl || '',
+        githubUrl: u.basicInfo?.githubUrl || '',
+        portfolioUrl: u.basicInfo?.portfolioUrl || '',
+      },
+      professionalInfo: {
+        headline: u.professionalInfo?.headline || '',
+        aboutMe: u.professionalInfo?.aboutMe || u.bio || '',
+        totalExperience:
+          u.professionalInfo?.totalExperience ||
+          (u.experienceYears ? `${u.experienceYears} Years` : ''),
+        currentJobTitle: u.professionalInfo?.currentJobTitle || '',
+        currentCompany: u.professionalInfo?.currentCompany || '',
+        careerLevel: u.professionalInfo?.careerLevel || 'Mid Level',
+        expectedSalary: u.professionalInfo?.expectedSalary || '',
+        preferredJobLocation: u.professionalInfo?.preferredJobLocation || '',
+        preferredWorkMode: u.professionalInfo?.preferredWorkMode || 'Remote',
+        noticePeriod: u.professionalInfo?.noticePeriod || '30 Days',
+        availability: u.professionalInfo?.availability || 'Immediate',
+      },
+      skills: Array.isArray(u.skills) ? u.skills : [],
+      categorizedSkills: {
+        technical: u.categorizedSkills?.technical || [],
+        languages: u.categorizedSkills?.languages || [],
+        frameworks: u.categorizedSkills?.frameworks || [],
+        databases: u.categorizedSkills?.databases || [],
+        tools: u.categorizedSkills?.tools || [],
+      },
+      educationList: u.educationList || [],
+      experienceList: u.experienceList || [],
+      projectsList: u.projectsList || [],
+      certificationsList: u.certificationsList || [],
+      languagesList: u.languagesList || [],
+      jobPreferences: {
+        preferredRole: u.jobPreferences?.preferredRole || '',
+        preferredLocations: u.jobPreferences?.preferredLocations || [],
+        workMode: u.jobPreferences?.workMode || 'Remote',
+        employmentType: u.jobPreferences?.employmentType || 'Full-time',
+        expectedSalary: u.jobPreferences?.expectedSalary || '',
+        experienceLevel: u.jobPreferences?.experienceLevel || 'Mid Level',
+      },
+      resume: u.resume || '',
+      resumeData: {
+        url: u.resumeData?.url || u.resume || '',
+        filename: u.resumeData?.filename || 'Resume Document',
+        uploadedAt: u.resumeData?.uploadedAt || null,
+        size: u.resumeData?.size || 0,
+      },
+    });
+  };
+
+  useEffect(() => {
+    fetchCandidateProfile();
+  }, []);
+
   useEffect(() => {
     if (user) {
-      setProfileData({
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        location: user.location || '',
-        profilePhoto: user.profilePhoto || user.profileImage || '',
-        bio: user.bio || '',
-        basicInfo: {
-          dob: user.basicInfo?.dob || '',
-          gender: user.basicInfo?.gender || '',
-          city: user.basicInfo?.city || '',
-          state: user.basicInfo?.state || '',
-          linkedinUrl: user.basicInfo?.linkedinUrl || '',
-          githubUrl: user.basicInfo?.githubUrl || '',
-          portfolioUrl: user.basicInfo?.portfolioUrl || '',
-        },
-        professionalInfo: {
-          headline: user.professionalInfo?.headline || '',
-          aboutMe: user.professionalInfo?.aboutMe || user.bio || '',
-          totalExperience:
-            user.professionalInfo?.totalExperience ||
-            (user.experienceYears ? `${user.experienceYears} Years` : ''),
-          currentJobTitle: user.professionalInfo?.currentJobTitle || '',
-          currentCompany: user.professionalInfo?.currentCompany || '',
-          careerLevel: user.professionalInfo?.careerLevel || 'Mid Level',
-          expectedSalary: user.professionalInfo?.expectedSalary || '',
-          preferredJobLocation: user.professionalInfo?.preferredJobLocation || '',
-          preferredWorkMode: user.professionalInfo?.preferredWorkMode || 'Remote',
-          noticePeriod: user.professionalInfo?.noticePeriod || '30 Days',
-          availability: user.professionalInfo?.availability || 'Immediate',
-        },
-        skills: Array.isArray(user.skills) ? user.skills : [],
-        categorizedSkills: {
-          technical: user.categorizedSkills?.technical || [],
-          languages: user.categorizedSkills?.languages || [],
-          frameworks: user.categorizedSkills?.frameworks || [],
-          databases: user.categorizedSkills?.databases || [],
-          tools: user.categorizedSkills?.tools || [],
-        },
-        educationList: user.educationList || [],
-        experienceList: user.experienceList || [],
-        projectsList: user.projectsList || [],
-        certificationsList: user.certificationsList || [],
-        languagesList: user.languagesList || [],
-        jobPreferences: {
-          preferredRole: user.jobPreferences?.preferredRole || '',
-          preferredLocations: user.jobPreferences?.preferredLocations || [],
-          workMode: user.jobPreferences?.workMode || 'Remote',
-          employmentType: user.jobPreferences?.employmentType || 'Full-time',
-          expectedSalary: user.jobPreferences?.expectedSalary || '',
-          experienceLevel: user.jobPreferences?.experienceLevel || 'Mid Level',
-        },
-        resume: user.resume || '',
-        resumeData: {
-          url: user.resumeData?.url || user.resume || '',
-          filename: user.resumeData?.filename || 'Resume Document',
-          uploadedAt: user.resumeData?.uploadedAt || null,
-          size: user.resumeData?.size || 0,
-        },
-      });
+      populateProfileState(user);
     }
   }, [user]);
 

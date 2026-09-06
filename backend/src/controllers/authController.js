@@ -9,29 +9,41 @@ const generateToken = (id) => {
   );
 };
 
-// Format user response safely
-const formatUserResponse = (user) => ({
-  id: user._id,
-  _id: user._id,
-  name: user.name,
-  email: user.email,
-  phone: user.phone || '',
-  role: user.role,
-  employeeId: user.employeeId || '',
-  department: user.department || '',
-  companyName: user.companyName || '',
-  companyLocation: user.companyLocation || '',
-  company: user.company || null,
-  bio: user.bio || '',
-  education: user.education || '',
-  experienceYears: user.experienceYears || 0,
-  skills: user.skills || [],
-  location: user.location || '',
-  resume: user.resume || '',
-  profileImage: user.profileImage || '',
-  isActive: user.isActive !== false,
-  createdAt: user.createdAt,
-});
+// Format user response safely with all candidate profile fields
+const formatUserResponse = (user) => {
+  const obj = typeof user.toObject === 'function' ? user.toObject() : { ...user };
+  delete obj.password;
+  return {
+    ...obj,
+    id: obj._id,
+    _id: obj._id,
+    phone: obj.phone || '',
+    employeeId: obj.employeeId || '',
+    department: obj.department || '',
+    companyName: obj.companyName || '',
+    companyLocation: obj.companyLocation || '',
+    company: obj.company || null,
+    bio: obj.bio || '',
+    education: obj.education || '',
+    experienceYears: obj.experienceYears || 0,
+    skills: obj.skills || [],
+    categorizedSkills: obj.categorizedSkills || { technical: [], languages: [], frameworks: [], databases: [], tools: [] },
+    location: obj.location || '',
+    resume: obj.resume || '',
+    resumeData: obj.resumeData || { url: '', filename: '', uploadedAt: null, size: 0 },
+    profileImage: obj.profileImage || obj.profilePhoto || '',
+    profilePhoto: obj.profilePhoto || obj.profileImage || '',
+    basicInfo: obj.basicInfo || { dob: '', gender: '', city: '', state: '', linkedinUrl: '', githubUrl: '', portfolioUrl: '' },
+    professionalInfo: obj.professionalInfo || { headline: '', aboutMe: '', totalExperience: '', currentJobTitle: '', currentCompany: '', careerLevel: '', expectedSalary: '', preferredJobLocation: '', preferredWorkMode: 'Remote', noticePeriod: '', availability: '' },
+    educationList: obj.educationList || [],
+    experienceList: obj.experienceList || [],
+    projectsList: obj.projectsList || [],
+    certificationsList: obj.certificationsList || [],
+    languagesList: obj.languagesList || [],
+    jobPreferences: obj.jobPreferences || { preferredRole: '', preferredLocations: [], workMode: 'Remote', employmentType: 'Full-time', expectedSalary: '', experienceLevel: 'Mid Level' },
+    isActive: obj.isActive !== false,
+  };
+};
 
 // @desc    Register a new user (Admin, Employer, Candidate, or Employee)
 // @route   POST /api/auth/register
