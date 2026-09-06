@@ -8,7 +8,7 @@ const connectDB = async () => {
     return mongoose.connection;
   }
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/job_portal';
+    const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/job_portal';
     
     // Attempt connecting to local / cloud MongoDB with a 3-second timeout
     const options = {
