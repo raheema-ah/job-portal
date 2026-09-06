@@ -1,0 +1,453 @@
+{
+  "info": {
+    "_postman_id": "89e5a1b3-4f9e-4c48-8e43-857e4e1a0b5b",
+    "name": "JobNest - Complete Role-Based Job Portal API",
+    "description": "Production Postman collection for JobNest role-based Job Portal covering Authentication (Candidate, Employer, Employee, Admin), Profile Management, Job Postings, Candidate Applications, Bookmarks, AI Resume Matching, and Admin Controls.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "candidateToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "employerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "jobId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "applicationId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Candidate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sarah Connor\",\n  \"email\": \"sarah.candidate@example.com\",\n  \"password\": \"password123\",\n  \"confirmPassword\": \"password123\",\n  \"phone\": \"+1 555-0199\",\n  \"role\": \"candidate\",\n  \"skills\": [\"React\", \"Node.js\", \"Tailwind CSS\", \"MongoDB\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Register Employer / Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alex Mercer\",\n  \"email\": \"alex@innovatetech.io\",\n  \"password\": \"password123\",\n  \"confirmPassword\": \"password123\",\n  \"phone\": \"+1 555-0188\",\n  \"role\": \"admin\",\n  \"companyName\": \"InnovateTech Systems\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Register Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jordan Staff\",\n  \"email\": \"jordan@company.com\",\n  \"password\": \"password123\",\n  \"confirmPassword\": \"password123\",\n  \"phone\": \"+1 555-0177\",\n  \"role\": \"employee\",\n  \"employeeId\": \"EMP-2026-001\",\n  \"department\": \"Engineering\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login - Candidate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.token) {",
+                  "  pm.collectionVariables.set('candidateToken', data.token);",
+                  "  pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"candidate@gmail.com\",\n  \"password\": \"candidatepassword123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Employer / Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.token) {",
+                  "  pm.collectionVariables.set('adminToken', data.token);",
+                  "  pm.collectionVariables.set('employerToken', data.token);",
+                  "  pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jobportal.com\",\n  \"password\": \"adminpassword123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current Authenticated User (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Candidate Profile & Resume",
+      "item": [
+        {
+          "name": "Get Candidate Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{candidateToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/profile", "host": ["{{baseUrl}}"], "path": ["users", "profile"] }
+          }
+        },
+        {
+          "name": "Update Candidate Profile (10 Sections)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{candidateToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Elena Rostova\",\n  \"phone\": \"+1 (555) 349-8812\",\n  \"basicInfo\": {\n    \"dob\": \"1996-08-14\",\n    \"gender\": \"Female\",\n    \"city\": \"San Francisco\",\n    \"state\": \"California\",\n    \"linkedinUrl\": \"https://linkedin.com/in/elena-rostova\",\n    \"githubUrl\": \"https://github.com/elena-rostova\",\n    \"portfolioUrl\": \"https://elena-rostova.dev\"\n  },\n  \"professionalInfo\": {\n    \"headline\": \"Senior Full-Stack Cloud Architect & React Lead\",\n    \"aboutMe\": \"Passionate engineer with 6+ years shipping high-availability React/Node web services.\",\n    \"totalExperience\": \"6\",\n    \"currentJobTitle\": \"Lead Frontend Engineer\",\n    \"currentCompany\": \"Aura Labs\",\n    \"careerLevel\": \"Senior\",\n    \"expectedSalary\": \"$165,000\",\n    \"preferredJobLocation\": \"San Francisco, CA\",\n    \"preferredWorkMode\": \"Remote\",\n    \"noticePeriod\": \"2 Weeks\",\n    \"availability\": \"Immediate\"\n  },\n  \"categorizedSkills\": {\n    \"technical\": [\"REST APIs\", \"Microservices\", \"GraphQL\", \"CI/CD\"],\n    \"languages\": [\"TypeScript\", \"JavaScript\", \"Python\", \"Go\"],\n    \"frameworks\": [\"React\", \"Node.js\", \"Next.js\", \"Express\", \"Tailwind CSS\"],\n    \"databases\": [\"MongoDB\", \"PostgreSQL\", \"Redis\"],\n    \"tools\": [\"Docker\", \"Kubernetes\", \"Git\", \"AWS\", \"Jest\"]\n  },\n  \"educationList\": [\n    {\n      \"degree\": \"Bachelor of Science\",\n      \"specialization\": \"Computer Science\",\n      \"college\": \"University of California, Berkeley\",\n      \"startYear\": \"2014\",\n      \"endYear\": \"2018\",\n      \"cgpa\": \"3.88 / 4.0\"\n    }\n  ],\n  \"experienceList\": [\n    {\n      \"jobTitle\": \"Lead Frontend Engineer\",\n      \"company\": \"Aura Labs\",\n      \"location\": \"San Francisco, CA\",\n      \"startDate\": \"2022-01\",\n      \"endDate\": \"Present\",\n      \"currentlyWorking\": true,\n      \"responsibilities\": \"Architected Next.js micro-frontends with 99.99% uptime.\",\n      \"technologies\": [\"React\", \"TypeScript\", \"Tailwind CSS\", \"AWS\"]\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/profile", "host": ["{{baseUrl}}"], "path": ["users", "profile"] }
+          }
+        },
+        {
+          "name": "Upload Resume (PDF/DOCX)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{candidateToken}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "resume", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/users/upload/resume", "host": ["{{baseUrl}}"], "path": ["users", "upload", "resume"] }
+          }
+        },
+        {
+          "name": "Upload Profile Avatar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{candidateToken}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "photo", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/users/upload/photo", "host": ["{{baseUrl}}"], "path": ["users", "upload", "photo"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Job Postings & Search",
+      "item": [
+        {
+          "name": "Browse Jobs (Search, Filter, Pagination)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/jobs?search=React&location=Remote&workMode=remote&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "search", "value": "React" },
+                { "key": "location", "value": "Remote" },
+                { "key": "workMode", "value": "remote" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Job Details by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/jobs/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["jobs", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "Create Job (Employer/Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.job && data.job._id) {",
+                  "  pm.collectionVariables.set('jobId', data.job._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Full Stack React / Node Engineer\",\n  \"companyName\": \"CloudScale Innovations\",\n  \"location\": \"San Francisco, CA\",\n  \"workMode\": \"remote\",\n  \"employmentType\": \"full-time\",\n  \"salaryMin\": 140000,\n  \"salaryMax\": 185000,\n  \"experienceLevel\": \"senior\",\n  \"skills\": [\"React\", \"Node.js\", \"TypeScript\", \"MongoDB\", \"Docker\", \"AWS\"],\n  \"description\": \"Join our high performance engineering group to build state-of-the-art cloud software.\",\n  \"requirements\": [\"5+ years software engineering experience\", \"Expert in React 18+ and Node.js microservices\"],\n  \"responsibilities\": [\"Design scalable REST APIs\", \"Mentor junior engineers\"],\n  \"benefits\": [\"Remote work allowance\", \"Comprehensive medical insurance\", \"Equity package\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/jobs", "host": ["{{baseUrl}}"], "path": ["jobs"] }
+          }
+        },
+        {
+          "name": "Get Employer's Jobs List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/jobs/employer/my-jobs", "host": ["{{baseUrl}}"], "path": ["jobs", "employer", "my-jobs"] }
+          }
+        },
+        {
+          "name": "Update Job Posting",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Lead Full Stack React Engineer (Updated)\",\n  \"salaryMax\": 195000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/jobs/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["jobs", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "Delete Job Posting",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/jobs/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["jobs", "{{jobId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Job Applications",
+      "item": [
+        {
+          "name": "Submit Application (Candidate)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{candidateToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"{{jobId}}\",\n  \"coverLetter\": \"I have deep expertise in building cloud microservices and React web portals. Please find my attached profile.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/applications", "host": ["{{baseUrl}}"], "path": ["applications"] }
+          }
+        },
+        {
+          "name": "Candidate Applications Tracker",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{candidateToken}}" }],
+            "url": { "raw": "{{baseUrl}}/applications", "host": ["{{baseUrl}}"], "path": ["applications"] }
+          }
+        },
+        {
+          "name": "Employer Applicants Feed",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/applications/employer", "host": ["{{baseUrl}}"], "path": ["applications", "employer"] }
+          }
+        },
+        {
+          "name": "Update Application Status (Shortlisted/Interview/Hired)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Shortlisted\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/applications/{{applicationId}}/status", "host": ["{{baseUrl}}"], "path": ["applications", "{{applicationId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Saved Jobs (Bookmarks)",
+      "item": [
+        {
+          "name": "Get Candidate Saved Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{candidateToken}}" }],
+            "url": { "raw": "{{baseUrl}}/saved-jobs", "host": ["{{baseUrl}}"], "path": ["saved-jobs"] }
+          }
+        },
+        {
+          "name": "Save Job Bookmark",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{candidateToken}}" }],
+            "url": { "raw": "{{baseUrl}}/saved-jobs/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["saved-jobs", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "Remove Job Bookmark",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{candidateToken}}" }],
+            "url": { "raw": "{{baseUrl}}/saved-jobs/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["saved-jobs", "{{jobId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Bonus - AI Resume Matching",
+      "item": [
+        {
+          "name": "Calculate AI Match Score",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{candidateToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidateSkills\": [\"React\", \"Node.js\", \"TypeScript\", \"MongoDB\", \"Docker\"],\n  \"jobSkills\": [\"React\", \"Node.js\", \"TypeScript\", \"MongoDB\", \"AWS\", \"Kubernetes\"],\n  \"experienceYears\": 5,\n  \"jobExperienceLevel\": \"senior\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ai/match", "host": ["{{baseUrl}}"], "path": ["ai", "match"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Admin Controls & Scraper",
+      "item": [
+        {
+          "name": "Admin Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/stats", "host": ["{{baseUrl}}"], "path": ["admin", "stats"] }
+          }
+        },
+        {
+          "name": "Admin All Users List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin", "users"] }
+          }
+        },
+        {
+          "name": "Trigger Web Scraper Ingestion",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"all\",\n  \"limit\": 25\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/scrape", "host": ["{{baseUrl}}"], "path": ["admin", "scrape"] }
+          }
+        },
+        {
+          "name": "Admin Platform Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/settings", "host": ["{{baseUrl}}"], "path": ["admin", "settings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Health & API Documentation",
+      "item": [
+        {
+          "name": "API Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    }
+  ]
+}
